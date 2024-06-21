@@ -80,8 +80,12 @@ fileOut.close();
 
 
 
-
-
+https://start.spring.io/
+--po prawej maven i szukasz run aby się zrobiło jak trzeba,
+--pobierasz dependency odpowiednie do testów i bazy danych
+--dodajesz html template do main/resources/template/tu
+--tworzysz imageController i już reszta do ogarnięcia
+--zmienne z html = zmienne w pliku Controller
 
 
 
