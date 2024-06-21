@@ -6,40 +6,39 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Collections;
 
 public class Threadini extends Thread{
 
-    private String name = null;
-    public Socket getSocket() {
-        return socket;
-    }
+    private String name;
+    private static String dbURL = "jdbc:sqlite:C:\\Users\\User\\Desktop\\db\\mytest.db";
+    private BufferedReader reader;
 
-    private Socket socket;
-    private PrintWriter writer;
-    private Server server;
-
-    public Threadini(Socket socket, Server server) {
-        this.socket = socket;
-        this.server = server;
+    public Threadini(Socket socket) throws IOException {
+        this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.name = null;
     }
 
     @Override
     public void run() {
         try {
-            InputStream input = socket.getInputStream();
-            OutputStream output = socket.getOutputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            writer = new PrintWriter(output, true);
-            String message;
-            name = reader.readLine();
-            int electrodeNum = 1;
+            String message = null;
+            int electrodeNum = 0;
+            this.name = reader.readLine();
             while ((message = reader.readLine()) != null) {
+                if(message.equals("-BYE-")){
+                    break;
+                }
+
                 BufferedImage image = makeChart(message);
                 String base64String = toBase64(image);
-                server.toDB(name, electrodeNum ,base64String);
                 ++electrodeNum;
+                toDB(name, electrodeNum ,base64String);
 
             }
         } catch (IOException e) {
@@ -51,6 +50,7 @@ public class Threadini extends Thread{
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         try (final OutputStream b64os = Base64.getEncoder().wrap(os)) {
             ImageIO.write(buf, "png", b64os);
+            ImageIO.write(buf, "png", new File("C:\\Users\\User\\Desktop\\lekcje online\\Programowanie Obiektowe\\Powtorzenie\\src\\main\\resources\\obrazek.png"));
         } catch (final IOException ioe) {
             throw new UncheckedIOException(ioe);
         }
@@ -59,14 +59,39 @@ public class Threadini extends Thread{
 
     public static BufferedImage makeChart(String line){
         String[] splitter = line.split(",");
-        BufferedImage chart = new BufferedImage(100, 200, BufferedImage.TYPE_INT_RGB);
+        BufferedImage chart = new BufferedImage(200, 100, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = chart.createGraphics();
-        g2d.setBackground(Color.white);
-        for(int i=0; i<chart.getWidth(); ++i){
-            Double pos = 100 - Double.parseDouble(splitter[i]);
-            g2d.draw(new Rectangle2D.Double(i, pos, 1, 1));
+        g2d.setColor(Color.white);
+        g2d.fillRect(0, 0, 200, 100);
+        g2d.setColor(Color.red);
+        for(int i=0; i<splitter.length; ++i){
+            try {
+                Double pos = 50.f - Double.parseDouble(splitter[i]);
+                g2d.draw(new Rectangle2D.Double(i, pos, 1, 1));
+            } catch (NumberFormatException e) {
+                System.err.println("Błąd zamiany tekstu na liczbę: " + splitter[i]);
+            }
         }
 
         return chart;
+    }
+
+    public static void toDB(String name, int num, String base64){ //ewentualnie jeszcze importować pakiet DB i tu stworzyć db
+        String insert = "INSERT INTO user_eeg (username, electrode_number, image) VALUES (?, ?, ?)";
+
+        try {
+            Connection conn = DriverManager.getConnection(dbURL);
+            PreparedStatement stmt = conn.prepareStatement(insert);
+            stmt.setString(1, name);
+            stmt.setInt(2, num);
+            stmt.setString(3, base64);
+            stmt.executeUpdate();
+            System.out.println("Inserted");
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
     }
 }

@@ -10,7 +10,7 @@ import java.sql.Statement;
 public class Creator {
 
     public static void main(String[] args) {
-        String url = "jdbc:sqlite:C:\\Users\\luke\\Documents\\usereeg.db";
+        String url = "jdbc:sqlite:C:\\Users\\User\\Desktop\\db\\mytest.db";
         Creator creator = new Creator();
         creator.create(url);
 

@@ -17,9 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 
 public class ClientTest {
-// tu należałoby zrobić kopie Client send data po to aby nie wysyłało pliku na serwer
-// tylko spowrotem do nas,
-// ewentualnie zapisywało na ścieżce zamiast wysyłać na serwer
+
 
     @ParameterizedTest
     @CsvFileSource(resources = "/test.csv", delimiter = ',')

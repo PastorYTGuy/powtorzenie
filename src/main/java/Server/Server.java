@@ -14,7 +14,6 @@ public class Server {
 
     private PrintWriter out;
     private BufferedReader in;
-    String dbURL = "jdbc:sqlite:C:\\Users\\luke\\Documents\\usereeg.db";
 
     public Server(int port) throws IOException {
         try {
@@ -32,32 +31,16 @@ public class Server {
             clientSocket = serverSocket.accept();
             System.out.println("Nowy klient dołączył!");
 
-            Threadini thread = new Threadini(clientSocket, this);
+            Threadini thread = new Threadini(clientSocket);
             thread.start();
             threads.add(thread);
 
         }
     }
 
-    public void toDB(String name, int num, String base64){ //ewentualnie jeszcze importować pakiet DB i tu stworzyć db
-        String insert = "INSERT INTO user_eeg (username, electrode_number, image) VALUES (?, ?, ?)";
-
-        try {
-             Connection conn = DriverManager.getConnection(dbURL);
-             PreparedStatement stmt = conn.prepareStatement(insert);
-             stmt.setString(1, name);
-             stmt.setInt(2, num);
-             stmt.setString(3, base64);
-             stmt.executeUpdate();
-             System.out.println("Inserted");
-             stmt.close();
-             conn.close();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
+    public static void main(String[] args) throws IOException {
+        Server server = new Server(2137);
+        server.listen();
     }
+
 }
-
-
-

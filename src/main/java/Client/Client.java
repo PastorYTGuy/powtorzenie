@@ -6,22 +6,20 @@ import java.util.concurrent.TimeUnit;
 
 public class Client {
 
-    private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
 
 
     public void sendData(String name, String filepath) throws IOException, InterruptedException {
         try {
-            Socket socket = new Socket("host", 2137);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            filepath = String.format("src/main/resources/%s", filepath);
+            Socket socket = new Socket("localhost", 2137);
+            out = new PrintWriter(new BufferedOutputStream(socket.getOutputStream()), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out.println(name);
+
 
         BufferedReader fromCSV = new BufferedReader(new FileReader(new File(filepath)));
-        out.println(name);
         String line = null;
         while((line = fromCSV.readLine()) != null){
             out.println(line);
@@ -32,8 +30,10 @@ public class Client {
 
         in.close();
         out.close();
-        clientSocket.close();
-
+        socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
